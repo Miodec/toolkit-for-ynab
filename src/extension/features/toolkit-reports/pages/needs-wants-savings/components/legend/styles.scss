@@ -1,0 +1,29 @@
+.tk-needs-wants-savings-legend {
+  &__icon-needs {
+    width: 16px;
+    height: 16px;
+    background-color: #e3633a;
+  }
+
+  &__icon-wants {
+    width: 16px;
+    height: 16px;
+    background-color: #99d265;
+  }
+
+  &__icon-savings {
+    width: 16px;
+    height: 16px;
+    background-color: #5ab1e8;
+  }
+
+  &__icon-unknown {
+    width: 16px;
+    height: 16px;
+    background-color: gray;
+  }
+
+  &__text-faded {
+    opacity: 70%;
+  }
+}
