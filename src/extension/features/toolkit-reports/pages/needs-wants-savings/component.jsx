@@ -1,7 +1,7 @@
 import Highcharts from 'highcharts';
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { localizedMonthAndYear, sortByGettableDate } from 'toolkit/extension/utils/date';
+import { localizedMonthAndYear, sortByDate } from 'toolkit/extension/utils/date';
 import { l10n } from 'toolkit/extension/utils/toolkit';
 import { FiltersPropType } from 'toolkit-reports/common/components/report-context/component';
 import { Legend } from './components/legend';
@@ -197,7 +197,7 @@ export class NeedsWantsSavingsComponent extends React.Component {
     }
 
     const allReportData = { inflows: [], outflows: [], labels: [] };
-    const transactions = this.props.filteredTransactions.slice().sort(sortByGettableDate);
+    const transactions = this.props.filteredTransactions.slice().sort(sortByDate);
 
     // const categoriesType = new Map();
 
@@ -257,7 +257,8 @@ export class NeedsWantsSavingsComponent extends React.Component {
     let currentUnknown = 0;
     let totalIncome = 0;
     transactions.forEach((transaction) => {
-      const transactionMonth = transaction.get('date').clone().startOfMonth();
+      // console.log(transaction);
+      const transactionMonth = transaction.date.clone().startOfMonth();
       if (lastMonth === null) {
         lastMonth = transactionMonth;
       }
@@ -269,10 +270,10 @@ export class NeedsWantsSavingsComponent extends React.Component {
         lastMonth = transactionMonth;
       }
 
-      const transactionCategoryId = transaction.get('subCategoryId');
+      const transactionCategoryId = transaction.subCategoryId;
 
-      if (transaction.get('subCategoryNameWrapped') === 'Inflow: Ready to Assign') {
-        totalIncome += transaction.get('amount');
+      if (transaction.subCategoryNameWrapped === 'Inflow: Ready to Assign') {
+        totalIncome += transaction.amount;
         return;
       }
 
@@ -285,43 +286,35 @@ export class NeedsWantsSavingsComponent extends React.Component {
       if (categoryNwsMap.has(transactionCategoryId)) {
         const value = categoryNwsMap.get(transactionCategoryId);
         if (value === 'needs') {
-          currentNeeds += transaction.get('amount');
+          currentNeeds += transaction.amount;
         } else if (value === 'wants') {
-          currentWants += transaction.get('amount');
+          currentWants += transaction.amount;
         } else if (value === 'savings') {
-          currentSavings += transaction.get('amount');
+          currentSavings += transaction.amount;
         } else {
-          currentUnknown += transaction.get('amount');
-          console.log(
-            transaction.get('payeeName'),
-            transaction.get('subCategoryNameWrapped'),
-            transaction
-          );
+          currentUnknown += transaction.amount;
+          console.log(transaction.payeeName, transaction.subCategoryNameWrapped, transaction);
         }
       } else {
         const category =
           Collections.subCategoriesCollection.findItemByEntityId(transactionCategoryId);
         const categoryNote = category.note;
         if (!categoryNote) {
-          currentUnknown += transaction.get('amount');
+          currentUnknown += transaction.amount;
           categoryNwsMap.set(transactionCategoryId, 'unknown');
         } else if (categoryNote.includes('[nws:needs]')) {
-          currentNeeds += transaction.get('amount');
+          currentNeeds += transaction.amount;
           categoryNwsMap.set(transactionCategoryId, 'needs');
         } else if (categoryNote.includes('[nws:wants]')) {
-          currentWants += transaction.get('amount');
+          currentWants += transaction.amount;
           categoryNwsMap.set(transactionCategoryId, 'wants');
         } else if (categoryNote.includes('[nws:savings]')) {
-          currentSavings += transaction.get('amount');
+          currentSavings += transaction.amount;
           categoryNwsMap.set(transactionCategoryId, 'savings');
         } else {
-          currentUnknown += transaction.get('amount');
+          currentUnknown += transaction.amount;
           categoryNwsMap.set(transactionCategoryId, 'unknown');
-          console.log(
-            transaction.get('payeeName'),
-            transaction.get('subCategoryNameWrapped'),
-            transaction
-          );
+          console.log(transaction.payeeName, transaction.subCategoryNameWrapped, transaction);
         }
       }
     });
@@ -340,7 +333,7 @@ export class NeedsWantsSavingsComponent extends React.Component {
     const { fromDate, toDate } = this.props.filters.dateFilter;
     if (transactions.length) {
       let currentIndex = 0;
-      const transactionMonth = transactions[0].get('date').clone().startOfMonth();
+      const transactionMonth = transactions[0].date.clone().startOfMonth();
       const lastFilterMonth = toDate.clone().addMonths(1).startOfMonth();
       while (transactionMonth.isBefore(lastFilterMonth)) {
         if (!allReportData.labels.includes(localizedMonthAndYear(transactionMonth))) {
